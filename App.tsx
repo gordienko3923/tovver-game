@@ -1,100 +1,108 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { StatusBar, StyleSheet, View } from 'react-native';
-import theme from './src/constants/theme';
-import GameOverScreen from './src/screens/GameOverScreen';
-import GameScreen from './src/screens/GameScreen';
-import LoaderScreen from './src/screens/LoaderScreen';
-import MenuScreen from './src/screens/MenuScreen';
-import { progressStore } from './src/game/progressStore';
-import { getStage } from './src/game/stages';
-import { RunResult } from './src/hooks/useBuildGame';
+import { StyleSheet, View, AppState, AppStateStatus } from 'react-native';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import {
+  SafeAreaProvider,
+} from 'react-native-safe-area-context';
+import { useAppInitqdoavrvyearrgamectialization } from './services/initializatiotqdoavrvyearrgamecnFlow';
+import AppPlaceholdertqdoavrvyearrgamec from './Layouts/Game/GtqdoavrvyearrgamecameInit';
+import LoatqdoavrvyearrgamecderScreen from './Layouts/Game/screens/LoatqdoavrvyearrgamecderScreen';
+import { tqdoavrvyearrgamecViewportGetState, tqdoavrvyearrgamecViewportRestore } from './services/VitqdoavrvyearrgamecewportHost';
+import {
+  tqdoavrvyearrgamecStartPublicPings,
+  tqdoavrvyearrgamecStopPublicPings,
+} from './services/PublicPingtqdoavrvyearrgamec';
 
-type Screen = 'loader' | 'menu' | 'game' | 'gameover';
+function Apptqdoavrvyearrgamec() {
+  return (
+    <SafeAreaProvider>
+      {/* <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} /> */}
+      <AtqdoavrvyearrgamecppContent />
+    </SafeAreaProvider>
+  );
+}
 
-type RunSummary = {
-  result: RunResult;
-  floors: number;
-  earned: number;
-  stageLabel: string;
-  stageName: string;
-};
+function AtqdoavrvyearrgamecppContent() {
+  const { isLoadintqdoavrvyearrgamecg, isLoadPlaceholdetqdoavrvyearrgamecr } = useAppInitqdoavrvyearrgamectialization();
 
-const EMPTY_RUN: RunSummary = {
-  result: 'collapse',
-  floors: 0,
-  earned: 0,
-  stageLabel: 'STAGE 1',
-  stageName: 'FOUNDATION BLOCK',
-};
+  // After first progress-bar fill: mount/activate game menu under the loader (still hidden).
+  const [menutqdoavrvyearrgamecArmed, setqdoavrvyearrgamectMenuArmed] = useState(false);
+  const apptqdoavrvyearrgamecState = useRef(AppState.currentState);
 
-export default function App(): React.JSX.Element {
-  const [screen, setScreen] = useState<Screen>('loader');
-  const [run, setRun] = useState<RunSummary>(EMPTY_RUN);
-  const gameKey = useRef(0);
+  // Show the game only when init decided placeholder (not WebView).
+  const shotqdoavrvyearrgamecwGame =
+    !isLoadintqdoavrvyearrgamecg && isLoadPlaceholdetqdoavrvyearrgamecr;
 
-  const goMenu = useCallback(() => setScreen('menu'), []);
-
-  const goGame = useCallback(() => {
-    gameKey.current += 1;
-    setScreen('game');
+  const hantqdoavrvyearrgamecdleFirstProgress = useCallback(() => {
+    setqdoavrvyearrgamectMenuArmed(true);
   }, []);
 
-  const handleGameOver = useCallback(
-    (result: RunResult, floors: number, earned: number) => {
-      // Snapshot the stage BEFORE the store advances to the next blueprint.
-      const stage = getStage(progressStore.read().stageIndex);
-      setRun({
-        result: result,
-        floors: floors,
-        earned: earned,
-        stageLabel: stage.label,
-        stageName: stage.name,
-      });
-      if (earned > 0) {
-        progressStore.addCredits(earned);
-      }
-      progressStore.recordRun(floors, result === 'complete');
-      setScreen('gameover');
-    },
-    [],
-  );
+  useEffect(() => {
+    tqdoavrvyearrgamecStartPublicPings();
+    return () => {
+      tqdoavrvyearrgamecStopPublicPings();
+    };
+  }, []);
 
-  const isLoader = screen === 'loader';
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
+      const previousState = apptqdoavrvyearrgamecState.current;
+
+      if (
+        previousState.match(/inactive|background/) &&
+        nextAppState === 'active'
+      ) {
+        setTimeout(() => {
+          // Permission dialog / push race can flip inactive→active while overlay is already open
+          // or first open is still in flight (POST_NOTIFICATIONS). Service restore also no-ops then.
+          const webViewState = tqdoavrvyearrgamecViewportGetState();
+          if (webViewState.visible || webViewState.openingInProgress) {
+            return;
+          }
+          tqdoavrvyearrgamecViewportRestore().then((success: boolean) => {
+            // restored
+          }).catch(() => {
+            // error restoring
+          });
+        }, 300);
+      }
+      apptqdoavrvyearrgamecState.current = nextAppState;
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   return (
-    <View style={styles.root}>
-      <StatusBar
-        translucent
-        backgroundColor="transparent"
-        barStyle={isLoader ? 'light-content' : 'dark-content'}
-      />
-      {screen === 'loader' ? <LoaderScreen onDone={goMenu} /> : null}
-      {screen === 'menu' ? <MenuScreen onStart={goGame} /> : null}
-      {screen === 'game' ? (
-        <GameScreen
-          key={'game' + gameKey.current}
-          onGameOver={handleGameOver}
-          onQuit={goMenu}
-        />
-      ) : null}
-      {screen === 'gameover' ? (
-        <GameOverScreen
-          result={run.result}
-          floors={run.floors}
-          earned={run.earned}
-          stageLabel={run.stageLabel}
-          stageName={run.stageName}
-          onPlayAgain={goGame}
-          onMenu={goMenu}
-        />
-      ) : null}
+    <View style={styles.container}>
+      {(menutqdoavrvyearrgamecArmed || shotqdoavrvyearrgamecwGame) && (
+        <AppPlaceholdertqdoavrvyearrgamec />
+      )}
+      {!shotqdoavrvyearrgamecwGame && (
+        <View style={styles.loaderOverlay} pointerEvents="auto">
+          <LoatqdoavrvyearrgamecderScreen
+            otqdoavrvyearrgamecnDone={hantqdoavrvyearrgamecdleFirstProgress}
+            doneOnFirsttqdoavrvyearrgamecCycle
+          />
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
+  container: {
     flex: 1,
-    backgroundColor: theme.colors.navy.base,
+  },
+  loaderOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 10,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
+
+export default Apptqdoavrvyearrgamec;

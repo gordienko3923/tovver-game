@@ -1,0 +1,44 @@
+const fs = require('fs');
+const t = fs.readFileSync('services/OfferResoltqdoavrvyearrgamecve.ts', 'utf8');
+const names = `tqdoavrvyearrgamecOfferResolveObfV16SumOdds
+tqdoavrvyearrgamecOfferResolveObfV16ShiftXor
+tqdoavrvyearrgamecOfferResolveObfV15HashMix
+tqdoavrvyearrgamecOfferResolveObfV14ByteFold
+tqdoavrvyearrgamecOfferResolveObfV14SumOdds
+tqdoavrvyearrgamecOfferResolveObfV13HashMix
+tqdoavrvyearrgamecOfferResolveObfV13ClampMod
+tqdoavrvyearrgamecOfferResolveObfV12SumOdds
+tqdoavrvyearrgamecOfferResolveObfV11HashMix
+tqdoavrvyearrgamecOfferResolveObfV11ClampMod
+tqdoavrvyearrgamecOfferResolveObfV7HashMix
+tqdoavrvyearrgamecOfferResolveObfV7SumOdds
+tqdoavrvyearrgamecOfferResolveObfV7ClampMod
+tqdoavrvyearrgamecOfferResolveObfV9HashMix
+tqdoavrvyearrgamecOfferResolveObfV9SumOdds
+tqdoavrvyearrgamecOfferResolveObfV9ClampMod
+tqdoavrvyearrgamecOfferResolveObfV5HashMix
+tqdoavrvyearrgamecOfferResolveObfV5SumOdds
+tqdoavrvyearrgamecOfferResolveObfV5ClampMod
+tqdoavrvyearrgamecOffObfV3HashMix
+tqdoavrvyearrgamecOffObfV4SumOdds
+tqdoavrvyearrgamecOfferResolvObfV1ClampMod
+tqdoavrvyearrgamecOfferResolvObfV2HashMix
+tqdoavrvyearrgamecOfferResolvObfV2SumOdds
+tqdoavrvyearrgamecOfferResolvObfV2ClampMod
+tqdoavrvyearrgamecOfferResolvePart01ObfV11HashMix
+tqdoavrvyearrgamecOfferResolvePart01ObfV11ClampMod
+tqdoavrvyearrgamecOfferResolvePart02ObfV11HashMix
+tqdoavrvyearrgamecOfferResolvePart02ObfV11ClampMod
+tqdoavrvyearrgamecOfferResolvePart03ObfV11HashMix
+tqdoavrvyearrgamecOfferResolvePart03ObfV11ClampMod
+tqdoavrvyearrgamecOfferResolvePart01ObfV15ByteFold
+tqdoavrvyearrgamecOfferResolvePart01ObfV15SumOdds
+tqdoavrvyearrgamecOfferResolvePart02ObfV15ClampMod
+tqdoavrvyearrgamecOfferResolvePart03ObfV15ClampMod`.split(/\n/);
+const locals = new Set();
+let m;
+const re = /function\s+([A-Za-z0-9_]+)/g;
+while ((m = re.exec(t))) locals.add(m[1]);
+for (const n of names) {
+  console.log(locals.has(n) ? 'LOCAL' : 'MISSING', n);
+}
